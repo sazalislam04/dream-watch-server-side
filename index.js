@@ -21,7 +21,30 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-console.log(uri);
+async function dbConnect() {
+  try {
+    client.connect();
+    console.log("databse connect");
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+dbConnect();
+
+// user collection
+const usersCollection = client.db("dream-watch").collection("users");
+
+app.put("/users/:email", async (req, res) => {
+  const user = req.body;
+  const email = req.params.email;
+  const filter = { email: email };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: user,
+  };
+  const result = await usersCollection.updateOne(filter, updateDoc, options);
+  res.send(result);
+});
 
 app.listen(port, () => {
   console.log(`Dream Watches server running on port ${port}`);
