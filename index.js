@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion } = require("mongodb");
+var jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -21,6 +22,8 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// verify jwt
+
 async function dbConnect() {
   try {
     client.connect();
@@ -32,18 +35,57 @@ async function dbConnect() {
 dbConnect();
 
 // user collection
+const categoriesCollection = client.db("dream-watch").collection("category");
 const usersCollection = client.db("dream-watch").collection("users");
 
-app.put("/users/:email", async (req, res) => {
-  const user = req.body;
-  const email = req.params.email;
-  const filter = { email: email };
-  const options = { upsert: true };
-  const updateDoc = {
-    $set: user,
-  };
-  const result = await usersCollection.updateOne(filter, updateDoc, options);
-  res.send(result);
+// category
+app.get("/categories", async (req, res) => {
+  try {
+    const query = {};
+    const result = await categoriesCollection.find(query).toArray();
+    res.send(result);
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+// jwet
+app.get("/jwt", async (req, res) => {
+  try {
+    const email = req.query.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    if (user) {
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "4d",
+      });
+      return res.send({ accessToken: token });
+    }
+    res.status(403).send({ message: "Forbidden Access" });
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
+// users
+app.post("/users", async (req, res) => {
+  try {
+    const user = req.body;
+    const result = await usersCollection.insertOne(user);
+    if (result.insertedId) {
+      res.send({
+        success: true,
+        message: "User Saved Success",
+      });
+    } else {
+      res.send({
+        success: false,
+        error: error.message,
+      });
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
 });
 
 app.listen(port, () => {
