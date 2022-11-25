@@ -213,7 +213,7 @@ app.get("/bookings", async (req, res) => {
 
 // delete booking
 app.delete("/bookings/:id", async (req, res) => {
-  const { id } = req.params.id;
+  const { id } = req.params;
   const query = { _id: ObjectId(id) };
   const result = await bookingsCollection.deleteOne(query);
   res.send(result);
