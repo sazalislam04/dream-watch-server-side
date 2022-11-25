@@ -265,6 +265,13 @@ app.get("/reports", async (req, res) => {
   const result = await reportsCollection.find(query).toArray();
   res.send(result);
 });
+// delete report
+app.delete("/reports/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const result = await reportsCollection.deleteOne(query);
+  res.send(result);
+});
 
 // add wishlist
 app.post("/wishlist", async (req, res) => {
