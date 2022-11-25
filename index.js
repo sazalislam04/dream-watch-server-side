@@ -41,7 +41,25 @@ const productsCollection = client.db("dream-watch").collection("products");
 const bookingsCollection = client.db("dream-watch").collection("bookings");
 const reportsCollection = client.db("dream-watch").collection("reports");
 const wishlistCollection = client.db("dream-watch").collection("wishlist");
-const advertiseCollection = client.db("dream-watch").collection("advertise");
+
+// advertise
+app.patch("/advertise/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const { isAdvertise } = req.body;
+  const updatedDoc = {
+    $set: {
+      isAdvertise: isAdvertise,
+    },
+  };
+  const result = productsCollection.updateOne(query, updatedDoc);
+  res.send(result);
+});
+
+app.get("/advertise", async (req, res) => {
+  const result = await productsCollection.find({ isAdvertise: true }).toArray();
+  res.send(result);
+});
 
 // all category
 app.get("/category", async (req, res) => {
