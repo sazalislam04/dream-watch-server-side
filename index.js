@@ -35,58 +35,58 @@ async function dbConnect() {
 dbConnect();
 
 // user collection
-const categoriesCollection = client.db("dream-watch").collection("category");
+const categoriesCollection = client.db("dream-watch").collection("allCategory");
 const usersCollection = client.db("dream-watch").collection("users");
-const productCategories = client.db("dream-watch").collection("categories");
+const productsCollection = client.db("dream-watch").collection("products");
+const bookingsCollection = client.db("dream-watch").collection("bookings");
+
+// all category
+app.get("/category", async (req, res) => {
+  const query = {};
+  const result = await categoriesCollection.find(query).toArray();
+  res.send(result);
+});
 
 // post all product
-app.post("/categories", async (req, res) => {
+app.post("/category-products", async (req, res) => {
   const product = req.body;
-  const result = await productCategories.insertOne(product, {
+  const result = await productsCollection.insertOne(product, {
     timestamp: new Date(),
   });
   res.send(result);
 });
-// get product Categories
-app.get("/categories", async (req, res) => {
-  const query = {};
-  const result = await productCategories.find(query).toArray();
-  res.send(result);
-});
 
 // category detail
-app.get("/categories/:id", async (req, res) => {
+app.get("/category/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const query = { _id: ObjectId(id) };
-    const result = await productCategories.findOne(query);
-    res.send(result);
+    const category = await categoriesCollection.findOne(query);
+
+    const result = await productsCollection
+      .find({ category_name: category.category_name })
+      .toArray();
+
+    res.send({ result, category });
   } catch (error) {
     console.log(error.message);
   }
 });
 
-// category
-// app.get("/categories", async (req, res) => {
-//   try {
-//     const query = {};
-//     const result = await categoriesCollection.find(query).toArray();
-//     res.send(result);
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// });
+app.get("/products", async (req, res) => {
+  const email = req.query.email;
+  const filter = { email: email };
+  const result = await productsCollection.find(filter).toArray();
+  res.send(result);
+});
 
-// app.get("/categories/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const query = { _id: ObjectId(id) };
-//     const result = await categoriesCollection.findOne(query);
-//     res.send(result);
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// });
+// delete product
+app.delete("/products/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const result = await productsCollection.deleteOne(query);
+  res.send(result);
+});
 
 // users
 app.get("/jwt", async (req, res) => {
@@ -173,6 +173,34 @@ app.get("/users/seller/:email", async (req, res) => {
   const query = { email };
   const user = await usersCollection.findOne(query);
   res.send({ isSeller: user?.role === "Seller" });
+});
+
+// buyer route
+app.get("/users/buyer/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email };
+  const user = await usersCollection.findOne(query);
+  res.send({ isBuyer: user?.role === "Buyers" });
+});
+
+// booking api
+app.post("/bookings", async (req, res) => {
+  const booking = req.body;
+  const query = {
+    price: booking.price,
+    email: booking.email,
+    productName: booking.productName,
+  };
+  const alreadyBooked = await bookingsCollection.find(query).toArray();
+  if (alreadyBooked.length) {
+    const message = `You Already booking: ${booking.name}`;
+    return res.send({
+      acknowledged: false,
+      message,
+    });
+  }
+  const result = await bookingsCollection.insertOne(booking);
+  res.send(result);
 });
 
 app.listen(port, () => {
