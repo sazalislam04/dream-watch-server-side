@@ -37,28 +37,56 @@ dbConnect();
 // user collection
 const categoriesCollection = client.db("dream-watch").collection("category");
 const usersCollection = client.db("dream-watch").collection("users");
+const productCategories = client.db("dream-watch").collection("categories");
 
-// category
+// post all product
+app.post("/categories", async (req, res) => {
+  const product = req.body;
+  const result = await productCategories.insertOne(product, {
+    timestamp: new Date(),
+  });
+  res.send(result);
+});
+// get product Categories
 app.get("/categories", async (req, res) => {
-  try {
-    const query = {};
-    const result = await categoriesCollection.find(query).toArray();
-    res.send(result);
-  } catch (error) {
-    console.log(error.message);
-  }
+  const query = {};
+  const result = await productCategories.find(query).toArray();
+  res.send(result);
 });
 
+// category detail
 app.get("/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const query = { _id: ObjectId(id) };
-    const result = await categoriesCollection.findOne(query);
+    const result = await productCategories.findOne(query);
     res.send(result);
   } catch (error) {
     console.log(error.message);
   }
 });
+
+// category
+// app.get("/categories", async (req, res) => {
+//   try {
+//     const query = {};
+//     const result = await categoriesCollection.find(query).toArray();
+//     res.send(result);
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// });
+
+// app.get("/categories/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const query = { _id: ObjectId(id) };
+//     const result = await categoriesCollection.findOne(query);
+//     res.send(result);
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// });
 
 // users
 app.get("/jwt", async (req, res) => {
