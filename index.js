@@ -203,6 +203,22 @@ app.post("/bookings", async (req, res) => {
   res.send(result);
 });
 
+// get booking data
+app.get("/bookings", async (req, res) => {
+  const email = req.query.email;
+  const filter = { email: email };
+  const result = await bookingsCollection.find(filter).toArray();
+  res.send(result);
+});
+
+// delete booking
+app.delete("/bookings/:id", async (req, res) => {
+  const { id } = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const result = await bookingsCollection.deleteOne(query);
+  res.send(result);
+});
+
 app.listen(port, () => {
   console.log(`Dream Watches server running on port ${port}`);
 });
