@@ -39,6 +39,9 @@ const categoriesCollection = client.db("dream-watch").collection("allCategory");
 const usersCollection = client.db("dream-watch").collection("users");
 const productsCollection = client.db("dream-watch").collection("products");
 const bookingsCollection = client.db("dream-watch").collection("bookings");
+const reportsCollection = client.db("dream-watch").collection("reports");
+const wishlistCollection = client.db("dream-watch").collection("wishlist");
+const advertiseCollection = client.db("dream-watch").collection("advertise");
 
 // all category
 app.get("/category", async (req, res) => {
@@ -216,6 +219,70 @@ app.delete("/bookings/:id", async (req, res) => {
   const { id } = req.params;
   const query = { _id: ObjectId(id) };
   const result = await bookingsCollection.deleteOne(query);
+  res.send(result);
+});
+
+// report admin route
+app.post("/reports", async (req, res) => {
+  const report = req.body;
+  const query = {
+    name: report.name,
+    email: report.email,
+  };
+
+  const alreadyReported = await reportsCollection.find(query).toArray();
+  if (alreadyReported.length) {
+    const message = `You Already Repoted`;
+    return res.send({
+      acknowledged: false,
+      message,
+    });
+  }
+  const result = await reportsCollection.insertOne(report);
+  res.send(result);
+});
+
+app.get("/reports", async (req, res) => {
+  const query = {};
+  const result = await reportsCollection.find(query).toArray();
+  res.send(result);
+});
+
+// add wishlist
+app.post("/wishlist", async (req, res) => {
+  const wishlist = req.body;
+
+  const query = {
+    product: wishlist.product,
+  };
+
+  console.log(wishlist);
+  const alreadyWish = await wishlistCollection.find(query).toArray();
+  console.log(alreadyWish);
+
+  if (alreadyWish.length) {
+    const message = `You Already Added Wishlist`;
+    return res.send({
+      acknowledged: false,
+      message,
+    });
+  }
+  const result = await wishlistCollection.insertOne(wishlist);
+  res.send(result);
+});
+
+app.get("/wishlist", async (req, res) => {
+  const email = req.query.email;
+  const filter = { userEmail: email };
+  const result = await wishlistCollection.find(filter).toArray();
+  res.send(result);
+});
+
+// delete wishlist
+app.delete("/wishlist/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const result = await wishlistCollection.deleteOne(query);
   res.send(result);
 });
 
