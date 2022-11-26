@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 
 // verify jwt
 
+
 async function dbConnect() {
   try {
     client.connect();
@@ -125,9 +126,15 @@ app.get("/jwt", async (req, res) => {
 });
 
 // user api
-app.post("/users", async (req, res) => {
+app.put("/users/:email", async (req, res) => {
+  const email = req.params.email;
   const user = req.body;
-  const result = await usersCollection.insertOne(user);
+  const filter = { email: email };
+  const options = { upsert: true };
+  const updatedDoc = {
+    $set: user,
+  };
+  const result = await usersCollection.updateOne(filter, updatedDoc, options);
   res.send(result);
 });
 
@@ -298,11 +305,14 @@ app.get("/reports", async (req, res) => {
   const result = await reportsCollection.find(query).toArray();
   res.send(result);
 });
+
 // delete report
 app.delete("/reports/:id", async (req, res) => {
   const { id } = req.params;
-  const query = { _id: ObjectId(id) };
-  const result = await reportsCollection.deleteOne(query);
+  const deletedReport = await productsCollection.deleteOne({
+    _id: ObjectId(id),
+  });
+  const result = await reportsCollection.deleteOne({ _id: id });
   res.send(result);
 });
 
