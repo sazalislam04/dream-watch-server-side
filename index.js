@@ -42,38 +42,10 @@ const bookingsCollection = client.db("dream-watch").collection("bookings");
 const reportsCollection = client.db("dream-watch").collection("reports");
 const wishlistCollection = client.db("dream-watch").collection("wishlist");
 
-// advertise
-app.patch("/advertise/:id", async (req, res) => {
-  const { id } = req.params;
-  const query = { _id: ObjectId(id) };
-  const { isAdvertise } = req.body;
-  const updatedDoc = {
-    $set: {
-      isAdvertise: isAdvertise,
-    },
-  };
-  const result = productsCollection.updateOne(query, updatedDoc);
-  res.send(result);
-});
-
-app.get("/advertise", async (req, res) => {
-  const result = await productsCollection.find({ isAdvertise: true }).toArray();
-  res.send(result);
-});
-
 // all category
 app.get("/category", async (req, res) => {
   const query = {};
   const result = await categoriesCollection.find(query).toArray();
-  res.send(result);
-});
-
-// post all product
-app.post("/category-products", async (req, res) => {
-  const product = req.body;
-  const result = await productsCollection.insertOne(product, {
-    timestamp: new Date(),
-  });
   res.send(result);
 });
 
@@ -94,6 +66,15 @@ app.get("/category/:id", async (req, res) => {
   }
 });
 
+// post all product
+app.post("/products", async (req, res) => {
+  const product = req.body;
+  const result = await productsCollection.insertOne(product, {
+    timestamp: new Date().toLocaleString(),
+  });
+  res.send(result);
+});
+
 app.get("/products", async (req, res) => {
   const email = req.query.email;
   const filter = { email: email };
@@ -106,6 +87,25 @@ app.delete("/products/:id", async (req, res) => {
   const { id } = req.params;
   const query = { _id: ObjectId(id) };
   const result = await productsCollection.deleteOne(query);
+  res.send(result);
+});
+
+// advertise
+app.patch("/advertise/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const { isAdvertise } = req.body;
+  const updatedDoc = {
+    $set: {
+      isAdvertise: isAdvertise,
+    },
+  };
+  const result = productsCollection.updateOne(query, updatedDoc);
+  res.send(result);
+});
+
+app.get("/advertise", async (req, res) => {
+  const result = await productsCollection.find({ isAdvertise: true }).toArray();
   res.send(result);
 });
 
