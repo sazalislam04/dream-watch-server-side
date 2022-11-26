@@ -139,6 +139,14 @@ app.get("/users", async (req, res) => {
   res.send(result);
 });
 
+// delete user
+app.delete("/users/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const result = await usersCollection.deleteOne(query);
+  res.send(result);
+});
+
 // verify user status
 app.patch("/verify-status/:id", async (req, res) => {
   const { id } = req.params;
