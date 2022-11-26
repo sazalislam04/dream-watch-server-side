@@ -114,12 +114,11 @@ app.get("/jwt", async (req, res) => {
   const email = req.query.email;
   const query = { email: email };
   const user = await usersCollection.findOne(query);
-
   if (user) {
     const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
       expiresIn: "1d",
     });
-    console.log(token);
+
     return res.send({ accessToken: token });
   }
   res.status(403).send({ accessToken: "Forbidden Access" });
@@ -148,16 +147,21 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 // verify user status
-app.patch("/verify-status/:id", async (req, res) => {
-  const { id } = req.params;
-  const query = { _id: ObjectId(id) };
-  const { status } = req.body;
-  const updatedDoc = {
-    $set: {
-      status: status,
-    },
-  };
-  const result = await usersCollection.updateOne(query, updatedDoc);
+app.patch("/verify-status/:email", async (req, res) => {
+  const verifyStatus = await productsCollection.updateMany(
+    { email: req.params.email },
+    {
+      $set: {
+        status: true,
+      },
+    }
+  );
+  const result = await usersCollection.updateOne(
+    { email: req.params.email },
+    {
+      $set: req.body,
+    }
+  );
   res.send(result);
 });
 
