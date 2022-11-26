@@ -109,7 +109,7 @@ app.delete("/products/:id", async (req, res) => {
   res.send(result);
 });
 
-// users
+// jwt
 app.get("/jwt", async (req, res) => {
   const email = req.query.email;
   const query = { email: email };
@@ -125,10 +125,17 @@ app.get("/jwt", async (req, res) => {
   res.status(403).send({ accessToken: "Forbidden Access" });
 });
 
-// user
+// user api
 app.post("/users", async (req, res) => {
   const user = req.body;
   const result = await usersCollection.insertOne(user);
+  res.send(result);
+});
+
+// get all user
+app.get("/users", async (req, res) => {
+  const query = {};
+  const result = await usersCollection.find(query).toArray();
   res.send(result);
 });
 
