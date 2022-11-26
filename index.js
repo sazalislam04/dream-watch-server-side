@@ -132,6 +132,20 @@ app.post("/users", async (req, res) => {
   res.send(result);
 });
 
+// verify user status
+app.patch("/verify-status/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: ObjectId(id) };
+  const { status } = req.body;
+  const updatedDoc = {
+    $set: {
+      status: status,
+    },
+  };
+  const result = await usersCollection.updateOne(query, updatedDoc);
+  res.send(result);
+});
+
 // get seller user
 app.get("/users/seller", async (req, res) => {
   const sellers = await usersCollection.find({ role: "Seller" }).toArray();
