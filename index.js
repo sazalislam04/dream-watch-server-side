@@ -430,6 +430,18 @@ app.post("/payment", verifyJWT, async (req, res) => {
   res.send(result);
 });
 
+app.put("/payment", async (req, res) => {
+  const { paid } = req.body;
+  const filter = { paid };
+  const updatedDoc = {
+    $set: {
+      paid: true,
+    },
+  };
+  const result = await productsCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+});
+
 app.listen(port, () => {
   console.log(`Dream Watches server running on port ${port}`);
 });
