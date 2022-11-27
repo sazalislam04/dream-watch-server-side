@@ -136,7 +136,9 @@ app.patch("/advertise/:id", async (req, res) => {
 });
 
 app.get("/advertise", async (req, res) => {
-  const result = await productsCollection.find({ isAdvertise: true }).toArray();
+  const result = await productsCollection
+    .find({ isAdvertise: true, available: true })
+    .toArray();
   res.send(result);
 });
 
@@ -311,7 +313,7 @@ app.get("/bookings", verifyJWT, async (req, res) => {
   res.send(result);
 });
 
-app.get("/bookings/:id", async (req, res) => {
+app.get("/bookings/:id", verifyJWT, async (req, res) => {
   const { id } = req.params;
   const result = await bookingsCollection.findOne({ _id: ObjectId(id) });
   res.send(result);
@@ -396,7 +398,7 @@ app.delete("/wishlist/:id", verifyJWT, async (req, res) => {
 });
 
 // payment
-app.post("/create-payment-intent", async (req, res) => {
+app.post("/create-payment-intent", verifyJWT, async (req, res) => {
   const booking = req.body;
   const price = booking.price;
   const amount = price * 100;
@@ -411,11 +413,12 @@ app.post("/create-payment-intent", async (req, res) => {
   });
 });
 
-app.post("/payment", verifyJWT, async (req, res) => {
+app.put("/payment", verifyJWT, async (req, res) => {
   const payment = req.body;
   const result = await paymentsCollection.insertOne(payment);
-
   const id = payment.bookingId;
+  const productId = payment.productId;
+  const query = { _id: ObjectId(productId) };
   const filter = { _id: ObjectId(id) };
   const updatedDoc = {
     $set: {
@@ -423,22 +426,20 @@ app.post("/payment", verifyJWT, async (req, res) => {
       transactionId: payment.transactionId,
     },
   };
+  const productUpdatedDoc = {
+    $set: {
+      available: false,
+    },
+  };
+  const updatedProductsCollection = await productsCollection.updateOne(
+    query,
+    productUpdatedDoc
+  );
   const updatedPaymentStatus = await bookingsCollection.updateOne(
     filter,
     updatedDoc
   );
-  res.send(result);
-});
 
-app.put("/payment", async (req, res) => {
-  const { paid } = req.body;
-  const filter = { paid };
-  const updatedDoc = {
-    $set: {
-      paid: true,
-    },
-  };
-  const result = await productsCollection.updateOne(filter, updatedDoc);
   res.send(result);
 });
 
