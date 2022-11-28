@@ -93,7 +93,7 @@ app.get("/category/:id", async (req, res) => {
 });
 
 // post all product
-app.post("/products", async (req, res) => {
+app.post("/products", verifyJWT, async (req, res) => {
   const product = req.body;
   const result = await productsCollection.insertOne(product, {
     timestamp: new Date().toLocaleString(),
@@ -149,7 +149,7 @@ app.get("/jwt", async (req, res) => {
   const user = await usersCollection.findOne(query);
   if (user) {
     const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
-      expiresIn: "1d",
+      expiresIn: "5s",
     });
 
     return res.send({ accessToken: token });
