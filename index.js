@@ -142,22 +142,7 @@ app.get("/advertise", async (req, res) => {
   res.send(result);
 });
 
-// jwt
-app.get("/jwt", async (req, res) => {
-  const email = req.query.email;
-  const query = { email: email };
-  const user = await usersCollection.findOne(query);
-  if (user) {
-    const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
-      expiresIn: "5d",
-    });
-
-    return res.send({ accessToken: token });
-  }
-  res.status(403).send({ accessToken: "Forbidden Access" });
-});
-
-// Save user email & generate JWT
+// Saved user email & generate JWT
 app.put("/users/:email", async (req, res) => {
   const email = req.params.email;
   const user = req.body;
